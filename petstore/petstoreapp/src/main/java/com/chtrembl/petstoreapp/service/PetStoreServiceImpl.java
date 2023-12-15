@@ -46,6 +46,8 @@ public class PetStoreServiceImpl implements PetStoreService {
 	private WebClient productServiceWebClient = null;
 	private WebClient orderServiceWebClient = null;
 
+	private WebClient orderItemsReserverWebClient = null;
+
 	public PetStoreServiceImpl(User sessionUser, ContainerEnvironment containerEnvironment, WebRequest webRequest) {
 		this.sessionUser = sessionUser;
 		this.containerEnvironment = containerEnvironment;
@@ -61,6 +63,7 @@ public class PetStoreServiceImpl implements PetStoreService {
 				.baseUrl(this.containerEnvironment.getPetStoreProductServiceURL()).build();
 		this.orderServiceWebClient = WebClient.builder().baseUrl(this.containerEnvironment.getPetStoreOrderServiceURL())
 				.build();
+		this.orderItemsReserverWebClient = WebClient.builder().baseUrl(this.containerEnvironment.getPetStoreOrderItemsReserverURL()).build();
 	}
 
 	@Override
@@ -191,7 +194,7 @@ public class PetStoreServiceImpl implements PetStoreService {
 			if (completeOrder) {
 				updatedOrder.setComplete(true);
 			} else {
-				List<Product> products = new ArrayList<Product>();
+				List<Product> products = new ArrayList<>();
 				Product product = new Product();
 				product.setId(Long.valueOf(productId));
 				product.setQuantity(quantity);
@@ -213,6 +216,16 @@ public class PetStoreServiceImpl implements PetStoreService {
 					.header("Cache-Control", "no-cache")
 					.retrieve()
 					.bodyToMono(Order.class).block();
+
+            this.orderItemsReserverWebClient.post().uri("/api/updateOrder")
+					.body(BodyInserters.fromPublisher(Mono.just(orderJSON), String.class))
+					.accept(MediaType.APPLICATION_JSON)
+					.header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+					.header("Cache-Control", "no-cache")
+					.retrieve()
+					.toBodilessEntity()
+					.toFuture()
+					.get();
 
 		} catch (Exception e) {
 			logger.warn(e.getMessage());

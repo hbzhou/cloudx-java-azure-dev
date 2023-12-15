@@ -12,6 +12,19 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
+  datasource:
+    url: jdbc:postgresql://postgreql.postgres.database.azure.com:5432/petservice?user=jeremy@postgreql&sslmode=require
+    password: Huawei12#$
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    init:
+      mode: always
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+
 
 management:
   endpoints:
@@ -24,6 +37,7 @@ management:
   endpoint:
     httptrace:
       enabled: true
+
     
 data:
   pets:
